@@ -300,9 +300,20 @@ async def require_auth(request: Request):
     return token
 
 # ── Startup / Shutdown ────────────────────────────────────────────────────────
+async def _safe_central_heartbeat():
+    try:
+        await central.heartbeat_loop()
+    except BaseException as exc:
+        logger.error(
+            "Central heartbeat stopped; continuing without central services: %r",
+            exc,
+            exc_info=True,
+        )
+
+
 @app.on_event("startup")
 async def startup():
-    asyncio.create_task(central.heartbeat_loop())
+    asyncio.create_task(_safe_central_heartbeat())
     global http_client
     limits = httpx.Limits(max_connections=500, max_keepalive_connections=100)
     timeout = httpx.Timeout(30.0, connect=10.0)
