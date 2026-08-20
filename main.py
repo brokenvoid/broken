@@ -313,7 +313,6 @@ async def _safe_central_heartbeat():
 
 @app.on_event("startup")
 async def startup():
-    asyncio.create_task(_safe_central_heartbeat())
     global http_client
     limits = httpx.Limits(max_connections=500, max_keepalive_connections=100)
     timeout = httpx.Timeout(30.0, connect=10.0)
